@@ -1,0 +1,2 @@
+export const ORDER_HEADER = 'PAYMENT-ORDER-ID';
+export const ACCESS_HEADER = 'PAYMENT-ACCESS-TOKEN';

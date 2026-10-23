@@ -1,0 +1,67 @@
+{
+  "name": "paidbeam",
+  "version": "0.1.0-rc.3",
+  "description": "Paidbeam merchant middleware and recoverable USDC buyer payments",
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/sdk/index.d.ts",
+      "import": "./dist/sdk/index.js"
+    },
+    "./merchant": {
+      "types": "./dist/sdk/merchant.d.ts",
+      "import": "./dist/sdk/merchant.js"
+    },
+    "./buyer": {
+      "types": "./dist/sdk/buyer.d.ts",
+      "import": "./dist/sdk/buyer.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "examples",
+    "LICENSE"
+  ],
+  "dependencies": {
+    "@x402/core": "2.28.0",
+    "@x402/evm": "2.28.0",
+    "viem": "2.57.10"
+  },
+  "publishConfig": {
+    "access": "public",
+    "tag": "next",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc -p tsconfig.check.json --noEmit",
+    "test": "tsx --test tests/*.test.ts",
+    "prepack": "npm run build"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Paidbeam",
+    "email": "250434532+paidbeam@users.noreply.github.com",
+    "url": "https://github.com/paidbeam"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paidbeam/paidbeam-sdk.git"
+  },
+  "homepage": "https://github.com/paidbeam/paidbeam-sdk#readme",
+  "bugs": {
+    "url": "https://github.com/paidbeam/paidbeam-sdk/issues"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "5.9.3",
+    "tsx": "4.20.6",
+    "esbuild": "0.25.12"
+  }
+}
