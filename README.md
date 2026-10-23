@@ -1,12 +1,24 @@
-# Paidbeam SDK — release candidate
+# Paidbeam SDK
 
-**Paidbeam SDK, package `paidbeam`. Not published to npm. MIT licensing is approved and included; npm publishing access and final release verification are still required before publication.** This candidate targets **Ethereum mainnet (chain 1)** and official Circle USDC. Signing a mainnet authorization can move real USDC after it is submitted. Sepolia and isolated local testing remain available through explicit policies for development.
+**Paidbeam SDK, package `paidbeam`, MIT licensed.** This candidate targets **Ethereum mainnet (chain 1)** and official Circle USDC. Signing a mainnet authorization can move real USDC after it is submitted. Sepolia and isolated local testing remain available through explicit policies for development.
 
 One ESM TypeScript SDK provides a merchant entry point and a buyer entry point. Both use Fetch APIs. The buyer bundle runs without Node built-ins or a private key in its source; a wallet supplies `signTypedData`. Node 24.13+ is the tested server runtime. Existing generic x402 clients need our required `order-binding` extension.
 
-## Install the local candidate
+## Install
 
-Build and pack this repository with Node.js 24.13 or newer:
+```sh
+npm install paidbeam@0.1.0-rc.3
+```
+
+This release candidate is distributed under the `next` tag:
+
+```sh
+npm install paidbeam@next
+```
+
+## Build from source
+
+Use Node.js 24.13 or newer:
 
 ```sh
 npm ci
@@ -16,15 +28,7 @@ npm test
 npm pack
 ```
 
-Install the resulting `paidbeam-0.1.0-rc.3.tgz` into your application. This repository is public; the package is not yet published on npm.
-
-After the public release, installation will be:
-
-```sh
-npm install paidbeam
-```
-
-This registry command is for the future public release. Until publication, use the local tarball above.
+The generated tarball can also be installed in a separate application. Package availability does not imply that a public Paidbeam settlement-service endpoint is live.
 
 ## Accept a payment
 

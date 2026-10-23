@@ -1,7 +1,8 @@
 # 0.1.0-rc.3
 
 - MIT license approved and included for public SDK distribution.
-- Production release verification; public metadata and registry publication are pending.
+- Standalone public source, Paidbeam author identity, and npm prerelease packaging.
+- Merchant middleware and durable buyer recovery for Ethereum mainnet USDC.
 
 # Changelog
 
