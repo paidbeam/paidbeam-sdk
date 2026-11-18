@@ -1,6 +1,6 @@
 {
   "name": "paidbeam",
-  "version": "0.1.0-rc.3",
+  "version": "0.1.0-rc.4",
   "description": "Paidbeam merchant middleware and recoverable USDC buyer payments",
   "type": "module",
   "sideEffects": false,
@@ -29,8 +29,8 @@
     "LICENSE"
   ],
   "dependencies": {
-    "@x402/core": "2.28.0",
-    "@x402/evm": "2.28.0",
+    "@x402/core": "2.31.0",
+    "@x402/evm": "2.31.0",
     "viem": "2.57.10"
   },
   "publishConfig": {

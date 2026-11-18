@@ -1,3 +1,9 @@
+# 0.1.0-rc.4 — security update
+
+- Updated official x402 core and EVM dependencies to 2.31.0, using patched Zod 4.6.6 or newer.
+- Removes the affected Zod 3 dependency chain without overrides or a protocol downgrade.
+- Preserves merchant/buyer exports, order binding, Ethereum mainnet USDC signing, and saved-purchase recovery.
+
 # 0.1.0-rc.3
 
 - MIT license approved and included for public SDK distribution.

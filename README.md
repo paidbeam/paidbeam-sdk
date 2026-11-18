@@ -6,8 +6,10 @@ One ESM TypeScript SDK provides a merchant entry point and a buyer entry point. 
 
 ## Install
 
+Version `0.1.0-rc.4` updates the x402/Zod dependency chain to address GHSA-mrhx-c7xc-m3w5. Use this version or a later reviewed release for new deployments.
+
 ```sh
-npm install paidbeam@0.1.0-rc.3
+npm install paidbeam@0.1.0-rc.4
 ```
 
 This release candidate is distributed under the `next` tag:
