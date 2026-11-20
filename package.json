@@ -1,7 +1,7 @@
 {
   "name": "paidbeam",
-  "version": "0.1.0-rc.4",
-  "description": "Paidbeam merchant middleware and recoverable USDC buyer payments",
+  "version": "0.2.0-rc.1",
+  "description": "Paidbeam merchant middleware and recoverable USDG payments on Robinhood Chain",
   "type": "module",
   "sideEffects": false,
   "engines": {
@@ -39,10 +39,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\" && tsc -p tsconfig.json",
     "check": "tsc -p tsconfig.check.json --noEmit",
     "test": "tsx --test tests/*.test.ts",
-    "prepack": "tsc -p tsconfig.json"
+    "prepack": "npm run build"
   },
   "license": "MIT",
   "author": {

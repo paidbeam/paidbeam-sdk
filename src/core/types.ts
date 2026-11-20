@@ -7,11 +7,11 @@ export type DeliveryState = 'not_started' | 'preparing' | 'ready' | 'delivered';
 export interface NetworkConfig {
   chainId: number; asset: Address; tokenName: string; tokenVersion: string;
 }
-export const ETHEREUM_USDC: NetworkConfig = {
-  chainId: 1, asset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', tokenName: 'USD Coin', tokenVersion: '2',
+export const ROBINHOOD_USDG: NetworkConfig = {
+  chainId: 4663, asset: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168', tokenName: 'Global Dollar', tokenVersion: '1',
 };
-export const SEPOLIA_USDC: NetworkConfig = {
-  chainId: 11155111, asset: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238', tokenName: 'USDC', tokenVersion: '2',
+export const ROBINHOOD_TESTNET_USDG: NetworkConfig = {
+  chainId: 46630, asset: '0x7E955252E15c84f5768B83c41a71F9eba181802F', tokenName: 'Global Dollar', tokenVersion: '1',
 };
 export interface Merchant {
   id: string; apiKey: string; recipient: Address;
@@ -35,7 +35,7 @@ export interface Order {
   authorization?: BoundPayload; result?: CachedResult; prepared?: PreparedTransaction;
   transaction?: Hex; blockHash?: Hex; blockNumber?: string;
   lease?: { owner: string; until: number }; error?: string;
-  settledAt?: number; deliveredAt?: number; mode: 'simulation' | 'ethereum';
+  settledAt?: number; deliveredAt?: number; mode: 'simulation' | 'robinhood';
   gasAccountedDay?: string;
 }
 export interface Quote { orderId: string; accessToken: string; paymentRequired: PaymentRequired }

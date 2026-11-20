@@ -1,15 +1,15 @@
 # Paidbeam SDK
 
-**Paidbeam SDK, package `paidbeam`, MIT licensed.** This candidate targets **Ethereum mainnet (chain 1)** and official Circle USDC. Signing a mainnet authorization can move real USDC after it is submitted. Sepolia and isolated local testing remain available through explicit policies for development.
+**Paidbeam SDK, package `paidbeam`, MIT licensed.** This candidate targets **Robinhood Chain mainnet (chain 4663)** and official Paxos USDG. Signing a mainnet authorization can move real USDG after it is submitted. Robinhood testnet and isolated local testing remain available through explicit policies for development.
 
 One ESM TypeScript SDK provides a merchant entry point and a buyer entry point. Both use Fetch APIs. The buyer bundle runs without Node built-ins or a private key in its source; a wallet supplies `signTypedData`. Node 24.13+ is the tested server runtime. Existing generic x402 clients need our required `order-binding` extension.
 
 ## Install
 
-Version `0.1.0-rc.4` updates the x402/Zod dependency chain to address GHSA-mrhx-c7xc-m3w5. Use this version or a later reviewed release for new deployments.
+Version `0.2.0-rc.1` targets Robinhood Chain and USDG exclusively. The public package name, MIT license and GitHub repository remain unchanged.
 
 ```sh
-npm install paidbeam@0.1.0-rc.4
+npm install paidbeam@0.2.0-rc.1
 ```
 
 This release candidate is distributed under the `next` tag:
@@ -54,26 +54,22 @@ export const GET = protect({
 });
 ```
 
-`generateReport` is your application code. The registered endpoint must match the path and method. `publicOrigin` is fixed configuration, never an untrusted forwarded header. This first release supports read-only GET handlers, UTF-8 JSON/text responses up to 1,000,000 bytes, and exact-price payments. A successful result is staged durably before settlement and released only after the configured confirmation policy. Handlers may be recomputed after a preparation lease expires and must not perform irreversible writes.
+`generateReport` is your application code. The registered endpoint must match the path and method. `publicOrigin` is fixed configuration, never an untrusted forwarded header. This first release supports read-only GET handlers, UTF-8 JSON/text responses up to 1,000,000 bytes, and exact-price payments. A successful result is staged durably before settlement and released only after the configured safe/finalized network confirmation. This can leave a purchase pending for minutes; recover the same purchase rather than authorizing another. Handlers may be recomputed after a preparation lease expires and must not perform irreversible writes.
 
 The SDK does not operate the payment service for you. The service operator manages mainnet activation, funding, payment limits and settlement pause controls separately. Onboarding currently uses our configured merchant registry; self-service registration and a public service URL are launch work.
 
 ## Make a recoverable mainnet purchase
 
 ```ts
-import { createPaymentClient } from 'paidbeam/buyer';
+import { createPaymentClient, robinhoodUsdgPolicy } from 'paidbeam/buyer';
 
 const payments = createPaymentClient({
   merchantOrigin: 'https://api.your-domain.example',
   signer, // { address, signTypedData }; see examples/browser.ts
-  policy: {
-    network: 'eip155:1',
-    asset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  policy: robinhoodUsdgPolicy({
     payTo: expectedMerchantWallet,
-    tokenName: 'USD Coin',
-    tokenVersion: '2',
-    maxAmount: 1_000_000n, // Maximum 1 USDC for this purchase
-  },
+    maxAmount: 1_000_000n, // Maximum 1 USDG for this purchase
+  }),
   savePurchase: async purchase => {
     await privatePurchaseStore.save(purchase);
   },
@@ -106,12 +102,12 @@ Each `purchase()` invocation can create a new payable order. If its result is pe
 
 The SDK checks the shape/network of a successful merchant payment receipt. Independent blockchain receipt verification is performed by the settlement service, not the browser helper. HTTP redirects are refused. Requests omit browser cookies; session-dependent responses are outside this version's request binding. Cross-origin browser integrations must configure CORS on their own merchant API, including payment headers. Same-origin use needs no extra CORS setup.
 
-Only EOA buyers are supported. Contract wallets, delegated accounts, POST handlers, streaming, subscriptions, variable charges and generic facilitator compatibility are not supported yet. Mainnet signing requires the official Ethereum USDC asset/domain plus an explicit recipient and maximum amount. The service separately requires mainnet activation and gas/payment limits.
+Only EOA buyers are supported. Contract wallets, delegated accounts, POST handlers, streaming, subscriptions, variable charges and generic facilitator compatibility are not supported yet. Mainnet signing requires the official Robinhood Chain USDG asset/domain plus an explicit recipient and maximum amount. The service separately requires mainnet activation and gas/payment limits.
 
 ## Public entry points
 
 - `paidbeam/merchant`: `protect`, `PaymentServiceClient`, payment header names, merchant types and `PaymentError`.
-- `paidbeam/buyer`: `createPaymentClient`, `PaymentAttemptError`, `signQuote`, `recoveryHeaders`, buyer policy and recovery types, plus `ethereumUsdcPolicy` and `ETHEREUM_USDC`.
+- `paidbeam/buyer`: `createPaymentClient`, `PaymentAttemptError`, `signQuote`, `recoveryHeaders`, buyer policy and recovery types, plus `robinhoodUsdgPolicy` and `ROBINHOOD_USDG`.
 - `paidbeam`: combined exports for Node/server applications.
 
 No settlement private keys, database implementation, workers or deployment configuration are included. See [CHANGELOG.md](CHANGELOG.md) for changes and [CONTRIBUTING.md](CONTRIBUTING.md) for local verification. Source, examples and support issues live in this repository.

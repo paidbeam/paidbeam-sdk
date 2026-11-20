@@ -3,14 +3,14 @@ import { resolve } from 'node:path';
 import { privateKeyToAccount } from 'viem/accounts';
 import { createPaymentClient, type SavedPurchase, type PaymentSigner } from 'paidbeam/buyer';
 
-// The buyer's own Ethereum wallet key. This is never a merchant API key or settlement signer key.
+// The buyer's own Robinhood Chain wallet key. This is never a merchant API key or settlement signer key.
 export function nodeBuyer(options: { buyerPrivateKey: `0x${string}`; merchantOrigin: string; recipient: string; privateDirectory: string }) {
   const directory = resolve(options.privateDirectory);
   mkdirSync(directory, { recursive: true, mode: 0o700 });
   const signer: PaymentSigner = privateKeyToAccount(options.buyerPrivateKey);
   const client = createPaymentClient({ merchantOrigin: options.merchantOrigin, signer,
-    policy: { network: 'eip155:1', asset: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-      payTo: options.recipient, tokenName: 'USD Coin', tokenVersion: '2', maxAmount: 1_000_000n },
+    policy: { network: 'eip155:4663', asset: '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168',
+      payTo: options.recipient, tokenName: 'Global Dollar', tokenVersion: '1', maxAmount: 1_000_000n },
     savePurchase: purchase => {
       writeFileSync(resolve(directory, purchase.credentials.orderId + '.json'), JSON.stringify(purchase), { mode: 0o600, flag: 'wx' });
     },

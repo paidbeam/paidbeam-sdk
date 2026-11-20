@@ -2,4 +2,4 @@ export { signQuote, recoveryHeaders, type PurchaseCredentials, type BuyerPolicy,
 export { createPaymentClient, PaymentAttemptError, type PaymentClientOptions, type SavedPurchase, type PaymentAttempt, type SdkBuyerPolicy } from './client.js';
 export { ORDER_HEADER, ACCESS_HEADER } from '../shared/headers.js';
 export type { PaymentRequired, PaymentPayload } from '../core/types.js';
-export { ethereumUsdcPolicy, ETHEREUM_USDC } from './networks.js';
+export { robinhoodUsdgPolicy, robinhoodTestnetUsdgPolicy, robinhoodChain, ROBINHOOD_USDG, ROBINHOOD_TESTNET_USDG } from './networks.js';

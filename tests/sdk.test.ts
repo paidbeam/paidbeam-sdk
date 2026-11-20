@@ -5,7 +5,7 @@ import { runInNewContext } from 'node:vm';
 import { build } from 'esbuild';
 import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import { recoverTypedDataAddress } from 'viem';
-import { createPaymentClient, PaymentAttemptError, ethereumUsdcPolicy, ETHEREUM_USDC } from '../src/sdk/buyer.js';
+import { createPaymentClient, PaymentAttemptError, robinhoodUsdgPolicy, ROBINHOOD_USDG } from '../src/sdk/buyer.js';
 import { protect, PaymentServiceClient } from '../src/sdk/merchant.js';
 import { encodeHeader, decodeHeader, typedAuthorization } from '../src/shared/wire.js';
 import type { BoundPayload, PaymentRequired } from '../src/core/types.js';
@@ -14,26 +14,26 @@ const recipient = '0x000000000000000000000000000000000000bEEF';
 const origin = 'https://api.merchant.example';
 const endpoint = origin + '/report';
 function quote(): PaymentRequired {
-  return { x402Version: 2, resource: { url: endpoint }, accepts: [{ scheme: 'exact', network: 'eip155:1', asset: ETHEREUM_USDC.asset,
-    amount: '1000000', payTo: recipient, maxTimeoutSeconds: 300, extra: { name: 'USD Coin', version: '2' } }],
+  return { x402Version: 2, resource: { url: endpoint }, accepts: [{ scheme: 'exact', network: 'eip155:4663', asset: ROBINHOOD_USDG.asset,
+    amount: '1000000', payTo: recipient, maxTimeoutSeconds: 300, extra: { name: 'Global Dollar', version: '1' } }],
     extensions: { 'order-binding': { info: { version: 1, orderId: randomUUID(), accessToken: 'test-only-recovery-token',
-      nonce: ('0x' + '11'.repeat(32)), expiresAt: Date.now() + 300_000, mode: 'ethereum' } } } };
+      nonce: ('0x' + '11'.repeat(32)), expiresAt: Date.now() + 300_000, mode: 'robinhood' } } } };
 }
 function paymentResponse() {
   // Mocked receipt; no blockchain transaction is submitted by any test.
-  return Response.json({ report: 'recoverable response' }, { headers: { 'PAYMENT-RESPONSE': encodeHeader({ success: true, network: 'eip155:1', transaction: '0x' + '22'.repeat(32) }) } });
+  return Response.json({ report: 'recoverable response' }, { headers: { 'PAYMENT-RESPONSE': encodeHeader({ success: true, network: 'eip155:4663', transaction: '0x' + '22'.repeat(32) }) } });
 }
 
 test('mainnet purchase persists before submission, verifies the signature and recovers without signing again', async () => {
   const account = privateKeyToAccount(generatePrivateKey()); let signatures = 0; let calls = 0; let saved: any;
   const client = createPaymentClient({ merchantOrigin: origin,
     signer: { address: account.address, signTypedData: async data => { signatures++; return account.signTypedData(data); } },
-    policy: ethereumUsdcPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: p => { saved = p; },
+    policy: robinhoodUsdgPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: p => { saved = p; },
     fetch: async (_url, init) => {
       if (++calls === 1) return Response.json(quote(), { status: 402 });
       assert.ok(saved); assert.equal(init?.redirect, 'error'); assert.equal(init?.credentials, 'omit');
       const payload = decodeHeader(new Headers(init?.headers).get('PAYMENT-SIGNATURE')!) as BoundPayload;
-      assert.equal(await recoverTypedDataAddress({ ...typedAuthorization(ETHEREUM_USDC, payload.payload.authorization), signature: payload.payload.signature }), account.address);
+      assert.equal(await recoverTypedDataAddress({ ...typedAuthorization(ROBINHOOD_USDG, payload.payload.authorization), signature: payload.payload.signature }), account.address);
       if (calls === 2) throw new Error('Mock lost response');
       return paymentResponse();
     } });
@@ -50,14 +50,14 @@ test('wrong price, recipient, domain, resource or network never reaches the wall
   for (const mutate of [
     (q: PaymentRequired) => { q.accepts[0]!.amount = '1000001'; },
     (q: PaymentRequired) => { q.accepts[0]!.payTo = '0x0000000000000000000000000000000000000001'; },
-    (q: PaymentRequired) => { q.accepts[0]!.extra = { name: 'Wrong token', version: '2' }; },
+    (q: PaymentRequired) => { q.accepts[0]!.extra = { name: 'Wrong token', version: '1' }; },
     (q: PaymentRequired) => { q.resource = { url: origin + '/other' }; },
-    (q: PaymentRequired) => { q.accepts[0]!.network = 'eip155:11155111'; },
+    (q: PaymentRequired) => { q.accepts[0]!.network = 'eip155:46630'; },
   ]) {
     const account = privateKeyToAccount(generatePrivateKey()); let signed = false;
     const q = quote(); mutate(q);
     const client = createPaymentClient({ merchantOrigin: origin, signer: { address: account.address, signTypedData: async data => { signed = true; return account.signTypedData(data); } },
-      policy: ethereumUsdcPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: () => {}, fetch: async () => Response.json(q, { status: 402 }) });
+      policy: robinhoodUsdgPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: () => {}, fetch: async () => Response.json(q, { status: 402 }) });
     await assert.rejects(client.purchase(endpoint)); assert.equal(signed, false);
   }
 });
@@ -65,7 +65,7 @@ test('wrong price, recipient, domain, resource or network never reaches the wall
 test('failed durable storage prevents submission of the authorization', async () => {
   let calls = 0;
   const client = createPaymentClient({ merchantOrigin: origin, signer: privateKeyToAccount(generatePrivateKey()),
-    policy: ethereumUsdcPolicy({ payTo: recipient, maxAmount: 1_000_000n }),
+    policy: robinhoodUsdgPolicy({ payTo: recipient, maxAmount: 1_000_000n }),
     savePurchase: () => { throw new Error('Storage unavailable'); },
     fetch: async () => { calls++; return Response.json(quote(), { status: 402 }); } });
   await assert.rejects(client.purchase(endpoint), /Storage unavailable/); assert.equal(calls, 1);
@@ -81,7 +81,7 @@ test('merchant entry produces an order-bound challenge using only the server cre
   const response = await handler(new Request(endpoint)); assert.equal(response.status, 402);
   assert.equal(response.headers.get('PAYMENT-ORDER-ID'), info.orderId);
   assert.equal(response.headers.get('cache-control'), 'no-store');
-  assert.equal((await response.json() as PaymentRequired).accepts[0]!.network, 'eip155:1');
+  assert.equal((await response.json() as PaymentRequired).accepts[0]!.network, 'eip155:4663');
 });
 
 test('buyer bundle executes without Node globals and signs no new authorization during recovery', async () => {
@@ -91,8 +91,17 @@ test('buyer bundle executes without Node globals and signs no new authorization 
   assert.equal(sandbox.Buffer, undefined); assert.equal(sandbox.process, undefined); assert.equal(sandbox.require, undefined);
   let saved: any; let requests = 0;
   const client = sandbox.PaidbeamSDK.createPaymentClient({ merchantOrigin: origin, signer: privateKeyToAccount(generatePrivateKey()),
-    policy: ethereumUsdcPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: (p: any) => { saved = p; },
+    policy: robinhoodUsdgPolicy({ payTo: recipient, maxAmount: 1_000_000n }), savePurchase: (p: any) => { saved = p; },
     fetch: async () => ++requests === 1 ? Response.json(quote(), { status: 402 }) : paymentResponse() });
   const first = await client.purchase(endpoint); const original = await first.response.text();
   assert.equal(await (await client.recover(saved)).response.text(), original); assert.equal(requests, 3);
+});
+
+
+test('unsupported production networks are rejected before a request or signature', () => {
+  const account = privateKeyToAccount(generatePrivateKey());
+  const base = robinhoodUsdgPolicy({ payTo: recipient, maxAmount: 1_000_000n });
+  for (const chainId of [1, 10, 56, 137, 8453]) assert.throws(() => createPaymentClient({
+    merchantOrigin: origin, signer: account, policy: { ...base, network: `eip155:${chainId}` }, savePurchase: () => {},
+  }), /Robinhood Chain only/);
 });

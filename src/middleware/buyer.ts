@@ -26,7 +26,7 @@ export async function signQuote(quote: PaymentRequired, signer: PaymentSigner, p
       (policy.tokenName && requirement.extra?.name !== policy.tokenName) ||
       (policy.tokenVersion && requirement.extra?.version !== policy.tokenVersion)) throw new Error('Quote recipient or token domain violates buyer policy');
   if (info.mode === 'simulation' && !policy.allowSimulation) throw new Error('Simulation requires an explicit opt-in');
-  if (requirement.network === 'eip155:1' && info.mode !== 'ethereum') throw new Error('Mainnet quotes must use Ethereum settlement, never simulation');
+  if (['eip155:4663', 'eip155:46630'].includes(requirement.network) && info.mode !== 'robinhood') throw new Error('Mainnet quotes must use Robinhood Chain settlement, never simulation');
   if (info.expiresAt <= Date.now()) throw new Error('Quote expired');
   const authorization = { from: signer.address, to: requirement.payTo as Hex, value: requirement.amount, validAfter: '0', validBefore: Math.floor(info.expiresAt / 1000).toString(), nonce: info.nonce };
   const signature = await signer.signTypedData(typedAuthorization({ chainId: Number(requirement.network.split(':')[1]), asset: requirement.asset as Hex, tokenName: String(requirement.extra?.name), tokenVersion: String(requirement.extra?.version) }, authorization));
